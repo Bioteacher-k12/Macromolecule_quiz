@@ -51,6 +51,17 @@
         .transition-all-200 {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+    #item-1 .sample-img-container,
+#item-7 .sample-img-container {
+    width: 240px;
+    height: 240px;
+}
+
+/* Expand the first column width to accommodate the larger images */
+#item-1 td:first-child,
+#item-7 td:first-child {
+    min-width: 260px;
+}
     </style>
 </head>
 <body class="h-full text-slate-800 font-sans antialiased flex flex-col justify-between">
