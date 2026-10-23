@@ -38,30 +38,27 @@
             background-color: #0284c7;
             color: #ffffff;
             border-color: #0284c7;
-            box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
         }
         
         .option-checkbox:focus + span {
-            ring: 2px;
-            ring-offset: 1px;
-            ring-color: #0284c7;
+            outline: 2px solid #0284c7;
+            outline-offset: 1px;
         }
 
         /* Smooth transition animations */
         .transition-all-200 {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-    #item-1 .sample-img-container,
-#item-7 .sample-img-container {
-    width: 240px;
-    height: 240px;
-}
 
-/* Expand the first column width to accommodate the larger images */
-#item-1 td:first-child,
-#item-7 td:first-child {
-    min-width: 260px;
-}
+        /* Lightbox modal animation */
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-modal {
+            animation: modalFadeIn 0.2s ease-out forwards;
+        }
     </style>
 </head>
 <body class="h-full text-slate-800 font-sans antialiased flex flex-col justify-between">
@@ -70,12 +67,15 @@
     <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3">
-                <div class="p-2.5 bg-brand-500 rounded-xl text-white shadow-sm">
-                    <i class="fa-solid font-bold fa-dna text-xl"></i>
+                <div class="p-2.5 bg-brand-500 rounded-xl text-white shadow-sm flex items-center justify-center">
+                    <i class="fa-solid fa-dna text-xl font-bold"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight text-white">Macromolecule Identification Quiz</h1>
-                    <p class="text-xs text-slate-400">Select all macromolecules present in each food/biological sample</p>
+                    <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                        Macromolecule Identification Quiz
+                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-brand-600 text-sky-100">Interactive</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Select all macromolecules present in each biological / food sample</p>
                 </div>
             </div>
 
@@ -98,13 +98,13 @@
         <div id="scoreBanner" class="hidden mb-8 p-6 bg-white border border-slate-200 rounded-2xl shadow-lg transition-all-200">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="flex items-center gap-5">
-                    <div id="scoreBadge" class="w-20 h-20 rounded-full flex flex-col items-center justify-center text-white font-bold text-2xl shadow-inner">
+                    <div id="scoreBadge" class="w-20 h-20 rounded-full flex flex-col items-center justify-center text-white font-bold text-2xl shadow-inner shrink-0">
                         <span id="scorePercentage">0%</span>
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-slate-900" id="scoreTitle">Quiz Results</h2>
                         <p class="text-sm text-slate-600 mt-0.5" id="scoreSubtitle">You scored <span id="scoreNumerator" class="font-bold">0</span> out of <span id="scoreDenominator" class="font-bold">7</span> points.</p>
-                        <div class="flex gap-4 mt-2 text-xs font-medium">
+                        <div class="flex flex-wrap gap-4 mt-2 text-xs font-medium">
                             <span class="inline-flex items-center text-emerald-700"><i class="fa-solid fa-circle-check mr-1.5"></i> <span id="correctCount">0</span> Fully Correct</span>
                             <span class="inline-flex items-center text-amber-700"><i class="fa-solid fa-circle-half-stroke mr-1.5"></i> <span id="partialCount">0</span> Partial</span>
                             <span class="inline-flex items-center text-rose-700"><i class="fa-solid fa-circle-xmark mr-1.5"></i> <span id="incorrectCount">0</span> Incorrect</span>
@@ -113,32 +113,34 @@
                 </div>
 
                 <div class="flex gap-3 w-full md:w-auto">
-                    <button onclick="resetQuiz()" class="w-full md:w-auto px-4 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all-200">
+                    <button onclick="resetQuiz()" class="w-full md:w-auto px-5 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all-200">
                         Try Again
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Instructions callout -->
-        <div class="mb-6 bg-sky-50 border border-sky-100 rounded-xl p-4 flex items-start gap-3">
-            <i class="fa-solid fa-circle-info text-sky-600 text-lg mt-0.5"></i>
-            <div class="text-sm text-sky-900">
-                <span class="font-semibold">Instructions:</span> Analyze each sample image below. Check <strong>all applicable macromolecules</strong> (Carbohydrate, Lipid, Protein, or Nucleic Acid) present in the sample. Note that some samples contain multiple macromolecules. Click <strong>"Check Answers"</strong> when finished.
+        <!-- Instructions Callout Banner -->
+        <div class="mb-6 bg-sky-50 border border-sky-200 rounded-xl p-4 flex items-start justify-between gap-3 shadow-sm">
+            <div class="flex items-start gap-3">
+                <i class="fa-solid fa-circle-info text-sky-600 text-lg mt-0.5 shrink-0"></i>
+                <div class="text-sm text-sky-950 leading-relaxed">
+                    <span class="font-bold text-sky-900">Instructions:</span> Analyze each sample image. Note that <strong>Sample #1</strong> and <strong>Sample #7</strong> feature enlarged high-detail views for chemical structure clarity. Click <strong>any image</strong> to open full-screen zoom mode. Check <strong>all applicable macromolecules</strong> (Carbohydrate, Lipid, Protein, Nucleic Acid) and click <strong>"Check Answers"</strong> to evaluate.
+                </div>
             </div>
         </div>
 
         <!-- Quiz Items Container (Table on MD+, Cards on Mobile) -->
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <!-- Desktop / Tablet Table View -->
+            <!-- 4-Column Desktop / Tablet Table View -->
             <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-100/80 border-b border-slate-200 text-xs uppercase tracking-wider font-semibold text-slate-600">
-                            <th scope="col" class="py-4 px-6 w-1/5">Sample & Image</th>
-                            <th scope="col" class="py-4 px-6 w-2/5">Select Macromolecules</th>
-                            <th scope="col" class="py-4 px-6 w-1/6 text-center">Status</th>
-                            <th scope="col" class="py-4 px-6 w-4/12">Explanation & Answer Key</th>
+                        <tr class="bg-slate-100/90 border-b border-slate-200 text-xs uppercase tracking-wider font-bold text-slate-700">
+                            <th scope="col" class="py-4 px-6 w-5/12">Column 1: Sample & Image</th>
+                            <th scope="col" class="py-4 px-6 w-3/12">Column 2: Select Macromolecules</th>
+                            <th scope="col" class="py-4 px-6 w-1/12 text-center">Column 3: Status</th>
+                            <th scope="col" class="py-4 px-6 w-3/12">Column 4: Explanation & Answer Key</th>
                         </tr>
                     </thead>
                     <tbody id="quizTableBody" class="divide-y divide-slate-200">
@@ -159,89 +161,244 @@
                 <i class="fa-solid fa-rotate-right mr-2"></i> Reset Answers
             </button>
             <button onclick="checkAnswers()" class="w-full sm:w-auto px-8 py-3 text-sm font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-xl shadow-md transition-all-200 text-center">
-                <i class="fa-solid fa-paper-plane mr-2"></i> Check Answers
+                <i class="fa-solid fa-paper-plane mr-2"></i> Submit & Check Answers
             </button>
         </div>
     </main>
 
-    
+    <!-- Fullscreen Lightbox / Zoom Modal -->
+    <div id="imageModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full overflow-hidden shadow-2xl animate-modal border border-slate-700">
+            <div class="bg-slate-900 px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-magnifying-glass-plus text-brand-500"></i>
+                    <h3 id="modalTitle" class="text-base font-bold text-white">Sample Image Inspector</h3>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 bg-slate-900/50 flex flex-col items-center justify-center min-h-[350px] max-h-[75vh] overflow-auto">
+                <div id="modalImageContainer" class="w-full h-full flex items-center justify-center">
+                    <!-- Image inserted dynamically -->
+                </div>
+            </div>
+            <div class="bg-slate-900 px-6 py-3 border-t border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                <span id="modalCaption">Sample Detailed Visual Inspection</span>
+                <button onclick="closeModal()" class="px-4 py-1.5 font-medium bg-slate-800 text-slate-200 hover:bg-slate-700 rounded-lg transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            Macromolecule Identification Quiz &bull; High-Detail Chemical & Biological Analysis
+        </div>
+    </footer>
+
     <!-- JavaScript Application Logic -->
     <script>
         /**
          * QUIZ CONFIGURATION & DATA SET
-         * Easily edit or customize image filenames, correct choices, and explanation strings.
+         * Configured for direct GitHub uploads named Mac_Quiz_1 through Mac_Quiz_7.
          */
         const quizData = [
             {
                 id: 1,
                 sampleNum: 1,
-                title: "Mac_Quiz_1",
-                image: "Mac_Quiz_1.png",
-                fallbackBg: "#3b82f6",
+                baseFileName: "Mac_Quiz_1",
+                title: "Sample 1 (Chemical Structure)",
+                isHighDetail: true, // Special enlarged 280px container
                 correct: ["Carbohydrate"],
-                explanation: "Correct answer: <strong>Carbohydrate</strong>. Contains simple or complex carbohydrates (sugars/starches) used for primary energy storage."
+                explanation: "Correct answer: <strong>Carbohydrate</strong>. Contains carbohydrates (sugars/starches like glucose polymers) used as primary biological energy sources."
             },
             {
                 id: 2,
                 sampleNum: 2,
+                baseFileName: "Mac_Quiz_2",
                 title: "Sample 2",
-                image: "Mac_Quiz_2.png",
-                fallbackBg: "#10b981",
+                isHighDetail: false,
                 correct: ["Protein"],
-                explanation: "Correct answer: <strong>Protein</strong>. Composed of amino acid chains required for cell tissue structure and enzymatic functions."
+                explanation: "Correct answer: <strong>Protein</strong>. Composed of amino acid chains linked by peptide bonds required for cellular structures and enzymes."
             },
             {
                 id: 3,
                 sampleNum: 3,
+                baseFileName: "Mac_Quiz_3",
                 title: "Sample 3",
-                image: "Mac_Quiz_3.png",
-                fallbackBg: "#8b5cf6",
+                isHighDetail: false,
                 correct: ["Protein"],
-                explanation: "Correct answer: <strong>Protein</strong>. Contains high concentration of protein structures."
+                explanation: "Correct answer: <strong>Protein</strong>. High concentration of essential structural protein complexes."
             },
             {
                 id: 4,
                 sampleNum: 4,
+                baseFileName: "Mac_Quiz_4",
                 title: "Sample 4",
-                image: "Mac_Quiz_4.png",
-                fallbackBg: "#f59e0b",
+                isHighDetail: false,
                 correct: ["Protein", "Lipid"],
-                explanation: "Correct answers: <strong>Protein & Lipids</strong>. Contains significant levels of both structural proteins and dietary fats/lipids."
+                explanation: "Correct answers: <strong>Protein & Lipid</strong>. Contains significant levels of both structural proteins and dietary fats/lipids (e.g. membrane/meat matrix)."
             },
             {
                 id: 5,
                 sampleNum: 5,
-                title: "Sample 5",
-                image: "Mac_Quiz_5.png",
-                fallbackBg: "#ec4899",
+                baseFileName: "Mac_Quiz_5",
+                title: "Sample 5 (Bread)",
+                isHighDetail: false,
                 correct: ["Carbohydrate", "Lipid", "Protein"],
-                explanation: "Bread is primarily a <strong>Carbohydrate</strong>, but also contains <strong>Lipids</strong> and <strong>Protein</strong> when prepared with milk, butter, or oil."
+                explanation: "Carb (if it has milk or butter then there is lipid and protein in it)."
             },
             {
                 id: 6,
                 sampleNum: 6,
+                baseFileName: "Mac_Quiz_6",
                 title: "Sample 6",
-                image: "Mac_Quiz_6.png",
-                fallbackBg: "#06b6d4",
+                isHighDetail: false,
                 correct: ["Lipid"],
-                explanation: "Correct answer: <strong>Lipid</strong>. Composed of hydrophobic fatty acid chains and glycerol molecules (fats/oils)."
+                explanation: "Correct answer: <strong>Lipid</strong>. Composed of nonpolar fatty acid chains attached to glycerol molecules (fats, oils, triglycerides)."
             },
             {
                 id: 7,
                 sampleNum: 7,
-                title: "Sample 7",
-                image: "Mac_Quiz_7.png",
-                fallbackBg: "#6366f1",
+                baseFileName: "Mac_Quiz_7",
+                title: "Sample 7 (Nucleotide Strand)",
+                isHighDetail: true, // Special enlarged 280px container
                 correct: ["Nucleic Acid"],
-                explanation: "Correct answer: <strong>Nucleic Acid</strong>. Contains genetic nucleotides (DNA/RNA) that store and transmit biological genetic information."
+                explanation: "Correct answer: <strong>Nucleic Acid</strong>. Contains genetic nucleotide polymers (DNA/RNA) composed of sugar, phosphate, and nitrogen bases that store genetic info."
             }
         ];
 
-        // Available Options
+        // Available Macromolecule Options
         const macromoleculeOptions = ["Carbohydrate", "Lipid", "Protein", "Nucleic Acid"];
 
-        // State variables
-        let isSubmitted = false;
+        /**
+         * SVG Vector Illustration Fallback Generator
+         * Renders accurate biological/chemical diagrams if local files are missing prior to upload
+         */
+        function createSvgFallbackUrl(sampleNum, title) {
+            let svgContent = "";
+            
+            switch(sampleNum) {
+                case 1: // Glucose Ring / Poly Saccharide
+                    svgContent = `
+                    <rect width="100%" height="100%" fill="#f0f9ff"/>
+                    <g transform="translate(20,15)" stroke="#0284c7" stroke-width="2.5" fill="none">
+                        <polygon points="120,30 180,60 180,120 120,150 60,120 60,60" fill="#e0f2fe"/>
+                        <circle cx="180" cy="60" r="6" fill="#0284c7"/>
+                        <text x="190" y="65" font-family="sans-serif" font-size="12" font-weight="bold" fill="#0369a1">O</text>
+                        <text x="105" y="95" font-family="sans-serif" font-size="13" font-weight="bold" fill="#0369a1">Glucose Ring</text>
+                        <line x1="120" y1="30" x2="120" y2="10" stroke="#0284c7" stroke-width="2"/>
+                        <text x="105" y="8" font-family="sans-serif" font-size="11" font-weight="bold" fill="#075985">CH₂OH</text>
+                        <text x="35" y="65" font-family="sans-serif" font-size="11" fill="#0284c7">HO</text>
+                        <text x="190" y="130" font-family="sans-serif" font-size="11" fill="#0284c7">OH</text>
+                        <text x="115" y="170" font-family="sans-serif" font-size="11" fill="#0284c7">OH</text>
+                    </g>
+                    <text x="50%" y="92%" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#0369a1">Polysaccharide / Carbohydrate Structure</text>`;
+                    break;
+                case 2: // Peptide Chain / Protein
+                    svgContent = `
+                    <rect width="100%" height="100%" fill="#f8fafc"/>
+                    <path d="M 20 80 Q 70 20, 120 80 T 220 80 T 320 80" stroke="#6366f1" stroke-width="4" fill="none"/>
+                    <circle cx="70" cy="50" r="12" fill="#818cf8"/>
+                    <circle cx="120" cy="80" r="12" fill="#a5b4fc"/>
+                    <circle cx="170" cy="110" r="12" fill="#c7d2fe"/>
+                    <circle cx="220" cy="80" r="12" fill="#818cf8"/>
+                    <text x="50%" y="30%" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#4338ca">Amino Acid Polypeptide Chain</text>
+                    <text x="50%" y="88%" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#6366f1">Peptide Bonds (-CO-NH-)</text>`;
+                    break;
+                case 3: // Protein Structure
+                    svgContent = `
+                    <rect width="100%" height="100%" fill="#f1f5f9"/>
+                    <g transform="translate(60,20)" stroke="#0d9488" stroke-width="3" fill="none">
+                        <path d="M 10 30 C 40 10, 60 90, 90 70 S 130 10, 150 50 S 80 130, 40 100 Z" fill="#ccfbf1" opacity="0.8"/>
+                    </g>
+                    <text x="50%" y="50%" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#0f766e">3D Protein Conformational Fold</text>
+                    <text x="50%" y="88%" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#14b8a6">Functional Enzyme / Protein</text>`;
+                    break;
+                case 4: // Lipid Bilayer + Protein
+                    svgContent = `
+                    <rect width="100%" height="100%" fill="#fffbebe6"/>
+                    <!-- Lipids -->
+                    <circle cx="40" cy="40" r="10" fill="#f59e0b"/><line x1="36" y1="50" x2="36" y2="80" stroke="#f59e0b" stroke-width="2"/><line x1="44" y1="50" x2="44" y2="80" stroke="#f59e0b" stroke-width="2"/>
+                    <circle cx="80" cy="40" r="10" fill="#f59e0b"/><line x1="76" y1="50" x2="76" y2="80" stroke="#f59e0b" stroke-width="2"/><line x1="84" y1="50" x2="84" y2="80" stroke="#f59e0b" stroke-width="2"/>
+                    <!-- Embedded Protein -->
+                    <rect x="110" y="30" width="50" height="90" rx="15" fill="#3b82f6"/>
+                    <text x="135" y="80" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="bold" fill="#ffffff">Protein</text>
+                    <!-- More Lipids -->
+                    <circle cx="190" cy="40" r="10" fill="#f59e0b"/><line x1="186" y1="50" x2="186" y2="80" stroke="#f59e0b" stroke-width="2"/><line x1="194" y1="50" x2="194" y2="80" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="50%" y="88%" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#d97706">Lipid Bilayer + Embedded Protein</text>`;
+                    break;
+                case 5: // Bread Sample
+                    svgContent = `
+                    <rect width="100%" height="100%" fill="#fff8f0"/>
+                    <path d="M 40 60 Q 120 20 200 60 L 190 120 Q 120 140 50 120 Z" fill="#d97706" stroke="#b45309" stroke-width="3"/>
+                    <path d="M 50 65 Q 120 30 190 65 L 180 115 Q 120 130 60 115 Z" fill="#fde68a"/>
+                    <circle cx="90" cy="80" r="3" fill="#b45309"/><circle cx="140" cy="90" r="4" fill="#b45309"/><circle cx="110" cy="100" r="3" fill="#b45309"/>
+                    <text x="50%" y="88%" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#92400e">Bread Sample (Carb, Protein & Lipid matrix)</text>`;
+                    break;
+                case 6: // Triglyceride / Lipid
+                    svgContent = `
+                    <rect width="100%" height="100%" fill="#fefce8"/>
+                    <rect x="40" y="30" width="20" height="100" fill="#eab308" rx="4"/>
+                    <text x="50" y="85" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#ffffff" transform="rotate(-90 50 85)">GLYCEROL</text>
+                    <!-- 3 Fatty Acid Tails -->
+                    <path d="M 60 45 L 90 35 L 120 55 L 150 35 L 180 55 L 210 35" stroke="#ca8a04" stroke-width="3" fill="none"/>
+                    <path d="M 60 80 L 90 70 L 120 90 L 150 70 L 180 90 L 210 70" stroke="#ca8a04" stroke-width="3" fill="none"/>
+                    <path d="M 60 115 L 90 105 L 120 125 L 150 105 L 180 125 L 210 105" stroke="#ca8a04" stroke-width="3" fill="none"/>
+                    <text x="50%" y="92%" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="#854d0e">Triglyceride Lipid Molecule</text>`;
+                    break;
+                case 7: // DNA Double Helix / Nucleotide
+                    svgContent = `
+                    <rect width="100%" height="100%" fill="#f0fdf4"/>
+                    <g transform="translate(30,15)">
+                        <!-- DNA Helix lines -->
+                        <path d="M 20 20 Q 80 80 140 20 T 260 20" stroke="#16a34a" stroke-width="3" fill="none"/>
+                        <path d="M 20 100 Q 80 40 140 100 T 260 100" stroke="#15803d" stroke-width="3" fill="none"/>
+                        <!-- Base pairs -->
+                        <line x1="50" y1="42" x2="50" y2="78" stroke="#22c55e" stroke-width="2.5"/>
+                        <line x1="80" y1="50" x2="80" y2="70" stroke="#0ea5e9" stroke-width="2.5"/>
+                        <line x1="110" y1="42" x2="110" y2="78" stroke="#eab308" stroke-width="2.5"/>
+                        <line x1="140" y1="20" x2="140" y2="100" stroke="#ef4444" stroke-width="2.5"/>
+                        <line x1="170" y1="42" x2="170" y2="78" stroke="#22c55e" stroke-width="2.5"/>
+                        <line x1="200" y1="50" x2="200" y2="70" stroke="#0ea5e9" stroke-width="2.5"/>
+                        <line x1="230" y1="42" x2="230" y2="78" stroke="#eab308" stroke-width="2.5"/>
+                    </g>
+                    <text x="50%" y="85%" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#15803d">Nucleic Acid (DNA / Nucleotide Sequence)</text>`;
+                    break;
+            }
+
+            const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 170" width="100%" height="100%">${svgContent}</svg>`;
+            return `data:image/svg+xml;utf8,${encodeURIComponent(fullSvg)}`;
+        }
+
+        /**
+         * Robust Image Loading Error Handler
+         * Tries multiple file extensions before seamlessly loading custom scientific SVG fallback
+         */
+        function handleImageError(img, baseName, sampleNum) {
+            const fallbackChain = [
+                `${baseName}.jpg`,
+                `${baseName}.jpeg`,
+                `${baseName}.webp`,
+                `${baseName}.gif`,
+                `${baseName}`,
+                `images/${baseName}.png`,
+                `images/${baseName}.jpg`
+            ];
+
+            let attempt = parseInt(img.getAttribute('data-fallback-step') || '0', 10);
+
+            if (attempt < fallbackChain.length) {
+                const nextSrc = fallbackChain[attempt];
+                img.setAttribute('data-fallback-step', attempt + 1);
+                img.src = nextSrc;
+            } else {
+                // If all file extensions fail, render dynamic biological vector SVG
+                img.onerror = null;
+                img.src = createSvgFallbackUrl(sampleNum, baseName);
+            }
+        }
 
         /**
          * Initialize and Render Quiz Layout
@@ -252,25 +409,47 @@
         });
 
         /**
-         * Generate HTML Image element with automated placeholder fallback
+         * Generate HTML Image element with automated fallback and specific size scaling
+         * Sample #1 and Sample #7 receive enlarged 280px containers for clear chemical structure readability.
          */
         function getImageHtml(item) {
-            const fallbackSrc = `https://placehold.co/160x120/e2e8f0/475569?text=Sample+${item.sampleNum}`;
+            const primarySrc = `${item.baseFileName}.png`;
+            
+            // Custom enlarged container styles for high-detail samples (#1 and #7)
+            const containerClasses = item.isHighDetail 
+                ? "w-full sm:w-[280px] h-[200px] sm:h-[220px] bg-white border-2 border-brand-500/30 rounded-2xl p-2 shadow-md relative group cursor-pointer overflow-hidden flex-shrink-0" 
+                : "w-full max-w-[180px] h-[130px] bg-slate-100 border border-slate-200 rounded-xl overflow-hidden relative group cursor-pointer shadow-sm flex-shrink-0";
+
+            const objectFitClass = item.isHighDetail ? "object-contain w-full h-full" : "object-cover w-full h-full";
+
             return `
-                <div class="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-video w-full max-w-[160px] shadow-sm">
-                    <img src="${item.image}" 
+                <div class="${containerClasses}" onclick="openModal('${item.baseFileName}', '${item.title}', ${item.sampleNum}, ${item.isHighDetail})">
+                    <img src="${primarySrc}" 
                          alt="${item.title}" 
-                         class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
-                         onerror="this.onerror=null; this.src='${fallbackSrc}';" />
-                    <span class="absolute top-1.5 left-1.5 bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-bold px-2 py-0.5 rounded-md">
+                         class="${objectFitClass} transition-transform duration-300 group-hover:scale-105" 
+                         onerror="handleImageError(this, '${item.baseFileName}', ${item.sampleNum})" />
+                    
+                    <span class="absolute top-2 left-2 bg-slate-900/90 backdrop-blur-md text-white text-[11px] font-bold px-2 py-0.5 rounded-md shadow">
                         #${item.sampleNum}
                     </span>
+
+                    ${item.isHighDetail ? `
+                        <span class="absolute top-2 right-2 bg-brand-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow flex items-center gap-1">
+                            <i class="fa-solid fa-microscope text-[9px]"></i> High Detail
+                        </span>
+                    ` : ''}
+
+                    <div class="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span class="bg-slate-900/80 text-white text-xs font-semibold px-2.5 py-1 rounded-lg backdrop-blur-sm shadow flex items-center gap-1.5">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i> Expand
+                        </span>
+                    </div>
                 </div>
             `;
         }
 
         /**
-         * Render Desktop Table View
+         * Render 4-Column Desktop Table View
          */
         function renderTable() {
             const tbody = document.getElementById("quizTableBody");
@@ -281,7 +460,7 @@
                 tr.className = "hover:bg-slate-50/80 transition-colors";
                 tr.id = `desktop-row-${item.id}`;
 
-                let optionsHtml = '<div class="grid grid-cols-2 gap-2.5 max-w-md">';
+                let optionsHtml = '<div class="grid grid-cols-2 gap-2.5 max-w-sm">';
                 macromoleculeOptions.forEach((opt) => {
                     const optId = `desktop-item-${item.id}-${opt.replace(/\s+/g, '')}`;
                     optionsHtml += `
@@ -292,7 +471,7 @@
                                    value="${opt}" 
                                    class="option-checkbox sr-only" 
                                    onchange="syncSelection(${item.id}, '${opt}', this.checked)">
-                            <span class="block px-3 py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all text-center">
+                            <span class="block px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all text-center">
                                 ${opt}
                             </span>
                         </label>
@@ -301,24 +480,36 @@
                 optionsHtml += '</div>';
 
                 tr.innerHTML = `
-                    <td class="py-4 px-6 align-middle">
-                        <div class="flex items-center space-x-3">
+                    <!-- Column 1: Sample # & Image -->
+                    <td class="py-5 px-6 align-middle">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                             ${getImageHtml(item)}
+                            <div>
+                                <span class="font-bold text-slate-900 text-sm block">${item.title}</span>
+                                <span class="text-[11px] font-mono text-slate-400 block">${item.baseFileName}</span>
+                                ${item.isHighDetail ? '<span class="inline-block mt-1 text-[11px] font-medium text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md border border-brand-200">Enlarged structure view</span>' : ''}
+                            </div>
                         </div>
                     </td>
-                    <td class="py-4 px-6 align-middle">
+
+                    <!-- Column 2: Select Macromolecules -->
+                    <td class="py-5 px-6 align-middle">
                         ${optionsHtml}
                     </td>
-                    <td class="py-4 px-6 align-middle text-center">
+
+                    <!-- Column 3: Status Badge -->
+                    <td class="py-5 px-6 align-middle text-center">
                         <div id="desktop-status-${item.id}">
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">
                                 <i class="fa-regular fa-circle mr-1.5"></i> Pending
                             </span>
                         </div>
                     </td>
-                    <td class="py-4 px-6 align-middle">
-                        <div id="desktop-explanation-${item.id}" class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-3 rounded-xl border border-dashed border-slate-200">
-                            <em>Select macromolecule(s) and click "Check Answers" to view feedback.</em>
+
+                    <!-- Column 4: Explanation & Answer Key -->
+                    <td class="py-5 px-6 align-middle">
+                        <div id="desktop-explanation-${item.id}" class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-dashed border-slate-200">
+                            <em>Click "Check Answers" to reveal explanations and key details.</em>
                         </div>
                     </td>
                 `;
@@ -349,7 +540,7 @@
                                    value="${opt}" 
                                    class="option-checkbox sr-only" 
                                    onchange="syncSelection(${item.id}, '${opt}', this.checked)">
-                            <span class="block px-3 py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all text-center">
+                            <span class="block px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all text-center">
                                 ${opt}
                             </span>
                         </label>
@@ -358,25 +549,27 @@
                 optionsHtml += '</div>';
 
                 card.innerHTML = `
-                    <div class="flex items-center justify-between gap-4">
-                        <div class="flex items-center space-x-3">
-                            ${getImageHtml(item)}
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-sm">Sample #${item.sampleNum}</h3>
+                    <div class="flex flex-col space-y-3">
+                        <div class="flex items-center justify-between gap-2">
+                            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                ${item.title}
+                            </h3>
+                            <div id="mobile-status-${item.id}">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                                    Pending
+                                </span>
                             </div>
                         </div>
-                        <div id="mobile-status-${item.id}">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">
-                                Pending
-                            </span>
+                        <div class="flex justify-center">
+                            ${getImageHtml(item)}
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Select Macromolecules:</label>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Select Macromolecules:</label>
                         ${optionsHtml}
                     </div>
                     <div id="mobile-explanation-${item.id}" class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-3 rounded-xl border border-dashed border-slate-200">
-                        <em>Select macromolecule(s) and click "Check Answers".</em>
+                        <em>Click "Check Answers" to reveal explanations.</em>
                     </div>
                 `;
                 mobileContainer.appendChild(card);
@@ -407,8 +600,6 @@
          * Evaluate Selections and Check Answers
          */
         function checkAnswers() {
-            isSubmitted = true;
-
             let totalPoints = 0;
             let correctCount = 0;
             let partialCount = 0;
@@ -418,14 +609,14 @@
                 const userSelected = getSelectedOptions(item.id);
                 const correctSet = item.correct;
 
-                // Calculate overlap
+                // Calculate overlaps
                 const truePositives = userSelected.filter(opt => correctSet.includes(opt));
                 const falsePositives = userSelected.filter(opt => !correctSet.includes(opt));
                 
                 const isExactMatch = (userSelected.length === correctSet.length) && 
                                      userSelected.every(val => correctSet.includes(val));
 
-                let status = "incorrect"; // "correct", "partial", "incorrect"
+                let status = "incorrect";
                 let itemScore = 0;
 
                 if (isExactMatch) {
@@ -433,7 +624,6 @@
                     itemScore = 1.0;
                     correctCount++;
                 } else if (truePositives.length > 0) {
-                    // Partial match logic
                     status = "partial";
                     const calcScore = (truePositives.length - (falsePositives.length * 0.5)) / correctSet.length;
                     itemScore = Math.max(0.25, Math.min(0.75, calcScore));
@@ -447,19 +637,18 @@
                 totalPoints += itemScore;
 
                 // Update UI elements for this item
-                updateItemUI(item, status, userSelected);
+                updateItemUI(item, status);
             });
 
-            // Display Score Summary
+            // Display Score Summary Banner
             displayScoreSummary(totalPoints, correctCount, partialCount, incorrectCount);
         }
 
         /**
-         * Update Item Status Badges & Explanations
+         * Update Status Badges & Explanations in UI
          */
-        function updateItemUI(item, status, userSelected) {
+        function updateItemUI(item, status) {
             let badgeHtml = "";
-            let mobileBadgeHtml = "";
             let bgClass = "";
 
             if (status === "correct") {
@@ -467,21 +656,18 @@
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-sm">
                         <i class="fa-solid fa-circle-check mr-1.5 text-emerald-600"></i> Correct
                     </span>`;
-                mobileBadgeHtml = badgeHtml;
                 bgClass = "bg-emerald-50/40";
             } else if (status === "partial") {
                 badgeHtml = `
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 shadow-sm">
                         <i class="fa-solid fa-circle-half-stroke mr-1.5 text-amber-600"></i> Partial
                     </span>`;
-                mobileBadgeHtml = badgeHtml;
                 bgClass = "bg-amber-50/40";
             } else {
                 badgeHtml = `
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200 shadow-sm">
                         <i class="fa-solid fa-circle-xmark mr-1.5 text-rose-600"></i> Incorrect
                     </span>`;
-                mobileBadgeHtml = badgeHtml;
                 bgClass = "bg-rose-50/40";
             }
 
@@ -493,10 +679,10 @@
             if (desktopStatus) desktopStatus.innerHTML = badgeHtml;
             if (desktopRow) desktopRow.className = `hover:bg-slate-50/80 transition-colors ${bgClass}`;
             if (desktopExp) {
-                desktopExp.className = "text-xs text-slate-700 leading-relaxed bg-white p-3 rounded-xl border border-slate-200 shadow-sm";
+                desktopExp.className = "text-xs text-slate-700 leading-relaxed bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm";
                 desktopExp.innerHTML = `
-                    <div class="mb-1 font-semibold text-slate-900 flex items-center gap-1.5">
-                        <i class="fa-solid fa-key text-brand-500"></i> Explanation:
+                    <div class="mb-1.5 font-bold text-slate-900 flex items-center gap-1.5 text-xs">
+                        <i class="fa-solid fa-key text-brand-500"></i> Answer Key & Explanation:
                     </div>
                     <div>${item.explanation}</div>
                 `;
@@ -506,12 +692,12 @@
             const mobileStatus = document.getElementById(`mobile-status-${item.id}`);
             const mobileExp = document.getElementById(`mobile-explanation-${item.id}`);
 
-            if (mobileStatus) mobileStatus.innerHTML = mobileBadgeHtml;
+            if (mobileStatus) mobileStatus.innerHTML = badgeHtml;
             if (mobileExp) {
                 mobileExp.className = "text-xs text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200";
                 mobileExp.innerHTML = `
-                    <div class="mb-1 font-semibold text-slate-900 flex items-center gap-1.5">
-                        <i class="fa-solid fa-key text-brand-500"></i> Explanation:
+                    <div class="mb-1.5 font-bold text-slate-900 flex items-center gap-1.5 text-xs">
+                        <i class="fa-solid fa-key text-brand-500"></i> Answer Key & Explanation:
                     </div>
                     <div>${item.explanation}</div>
                 `;
@@ -541,17 +727,17 @@
             scoreDenominator.innerText = quizData.length;
 
             if (percentage >= 85) {
-                scoreBadge.className = "w-20 h-20 rounded-full flex flex-col items-center justify-center text-white font-bold text-2xl bg-emerald-500 shadow-emerald-200 shadow-lg";
+                scoreBadge.className = "w-20 h-20 rounded-full flex flex-col items-center justify-center text-white font-bold text-2xl bg-emerald-500 shadow-emerald-200 shadow-lg shrink-0";
                 scoreTitle.innerText = "Excellent Work! 🎉";
-                scoreSubtitle.innerText = `You demonstrated a high mastery of macromolecule identification!`;
+                scoreSubtitle.innerText = `You demonstrated high mastery of macromolecule identification!`;
             } else if (percentage >= 60) {
-                scoreBadge.className = "w-20 h-20 rounded-full flex flex-col items-center justify-center text-white font-bold text-2xl bg-amber-500 shadow-amber-200 shadow-lg";
+                scoreBadge.className = "w-20 h-20 rounded-full flex flex-col items-center justify-center text-white font-bold text-2xl bg-amber-500 shadow-amber-200 shadow-lg shrink-0";
                 scoreTitle.innerText = "Good Job! 👍";
-                scoreSubtitle.innerText = `You are on the right track. Review the explanations below to improve your score.`;
+                scoreSubtitle.innerText = `Review the explanations below to improve your score.`;
             } else {
-                scoreBadge.className = "w-20 h-20 rounded-full flex flex-col items-center justify-center text-white font-bold text-2xl bg-rose-500 shadow-rose-200 shadow-lg";
+                scoreBadge.className = "w-20 h-20 rounded-full flex flex-col items-center justify-center text-white font-bold text-2xl bg-rose-500 shadow-rose-200 shadow-lg shrink-0";
                 scoreTitle.innerText = "Keep Practicing! 💡";
-                scoreSubtitle.innerText = `Take a close look at the answer keys and explanations below to strengthen your understanding.`;
+                scoreSubtitle.innerText = `Check the answer keys below to strengthen your understanding.`;
             }
 
             scoreBanner.classList.remove("hidden");
@@ -559,11 +745,45 @@
         }
 
         /**
+         * Open Image Inspection Lightbox Modal
+         */
+        function openModal(baseFileName, title, sampleNum, isHighDetail) {
+            const modal = document.getElementById("imageModal");
+            const modalTitle = document.getElementById("modalTitle");
+            const modalCaption = document.getElementById("modalCaption");
+            const container = document.getElementById("modalImageContainer");
+
+            modalTitle.innerText = `${title} (Sample #${sampleNum})`;
+            modalCaption.innerText = isHighDetail 
+                ? `Enlarged View: Sample #${sampleNum} Chemical Structure` 
+                : `Expanded Inspector View: Sample #${sampleNum}`;
+
+            const img = document.createElement("img");
+            img.className = "max-h-[60vh] max-w-full object-contain rounded-xl shadow-lg";
+            img.src = `${baseFileName}.png`;
+            img.alt = title;
+            img.onerror = () => {
+                img.onerror = null;
+                img.src = createSvgFallbackUrl(sampleNum, baseFileName);
+            };
+
+            container.innerHTML = "";
+            container.appendChild(img);
+
+            modal.classList.remove("hidden");
+        }
+
+        /**
+         * Close Lightbox Modal
+         */
+        function closeModal() {
+            document.getElementById("imageModal").classList.add("hidden");
+        }
+
+        /**
          * Reset Quiz State
          */
         function resetQuiz() {
-            isSubmitted = false;
-
             // Uncheck all checkboxes
             const checkboxes = document.querySelectorAll('.option-checkbox');
             checkboxes.forEach(cb => cb.checked = false);
@@ -571,7 +791,7 @@
             // Hide Score Banner
             document.getElementById("scoreBanner").classList.add("hidden");
 
-            // Re-render UI
+            // Re-render UI to restore default status badges and explanations
             renderTable();
             renderMobileCards();
 
